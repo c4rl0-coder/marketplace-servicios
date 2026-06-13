@@ -24,10 +24,10 @@ function App() {
   const [telefono, setTelefono] = useState('');
   const [categoria, setCategoria] = useState('');
 
-  // 1. TRAER SERVICIOS DEL BACKEND
+  // 1. TRAER SERVICIOS DEL BACKEND (Actualizado a Render)
   const obtenerServicios = async (termino = '') => {
     try {
-      const respuesta = await fetch(`http://localhost:5000/api/servicios?buscar=${termino}`);
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL}/api/servicios?buscar=${termino}`);
       const datos = await respuesta.json();
       setServicios(datos);
     } catch (error) {
@@ -47,11 +47,11 @@ function App() {
     obtenerServicios(busqueda);
   };
 
-  // 3. PROCESAR EL REGISTRO DE USUARIOS
+  // 3. PROCESAR EL REGISTRO DE USUARIOS (Corregido doble fetch y ruta)
   const manejarRegistroUsuario = async (e) => {
     e.preventDefault();
     try {
-      const respuesta = await fetch('http://localhost:5000/api/registro', {
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: regNombre, correo: regCorreo, contrasena: regContrasena })
@@ -59,7 +59,7 @@ function App() {
       const datos = await respuesta.json();
 
       if (respuesta.ok) {
-        alert(datos.mensaje);
+        alert(datos.mensaje || "¡Registro exitoso!");
         setVista('login'); // Lo mandamos a iniciar sesión
         setRegNombre(''); setRegCorreo(''); setRegContrasena('');
       } else {
@@ -70,11 +70,11 @@ function App() {
     }
   };
 
-  // 4. PROCESAR EL INICIO DE SESIÓN
+  // 4. PROCESAR EL INICIO DE SESIÓN (Actualizado a Render y ruta estándar)
   const manejarLoginUsuario = async (e) => {
     e.preventDefault();
     try {
-      const respuesta = await fetch('http://localhost:5000/api/login', {
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo: loginCorreo, contrasena: loginContrasena })
@@ -94,7 +94,7 @@ function App() {
     }
   };
 
-  // 5. REGISTRAR UN NUEVO SERVICIO (AMARRADO AL USUARIO LOGUEADO)
+  // 5. REGISTRAR UN NUEVO SERVICIO (Actualizado a Render)
   const manejarRegistroServicio = async (e) => {
     e.preventDefault();
 
@@ -104,7 +104,7 @@ function App() {
     }
 
     const nuevoServicio = {
-      id_usuario: usuarioLogueado.id, // ID dinámico del usuario que inició sesión
+      id_usuario: usuarioLogueado?.id, // ID dinámico del usuario seguro
       titulo,
       descripcion,
       precio: parseFloat(precio),
@@ -113,7 +113,7 @@ function App() {
     };
 
     try {
-      const respuesta = await fetch('http://localhost:5000/api/servicios', {
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL}/api/servicios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nuevoServicio)
@@ -131,12 +131,14 @@ function App() {
     }
   };
 
-  // 6. ELIMINAR UN SERVICIO
+  // 6. ELIMINAR UN SERVICIO (Actualizado a Render)
   const eliminarServicio = async (id) => {
     if (!window.confirm("¿Estás seguro de que deseas eliminar este servicio?")) return;
 
     try {
-      const respuesta = await fetch(`http://localhost:5000/api/servicios/${id}`, { method: 'DELETE' });
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL}/api/servicios/${id}`, { 
+        method: 'DELETE' 
+      });
       if (respuesta.ok) {
         alert("🗑️ Servicio eliminado correctamente.");
         obtenerServicios();
